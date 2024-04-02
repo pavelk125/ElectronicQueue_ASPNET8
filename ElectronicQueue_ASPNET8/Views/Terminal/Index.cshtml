@@ -1,0 +1,30 @@
+﻿@using ElectronicQueue.Database.Models
+@model List<Theme>
+@{
+    Layout = null;
+}
+<div class="text-center">
+    <table align="center">
+        <tr>
+            <td>Тема</td>
+            <td>Описание</td>
+        </tr>
+        @foreach (Theme theme in Model)
+        {
+            <tr>
+                <td>@theme.ThemeName</td>
+                <td>@theme.Description</td>
+                <td><button type="button" onclick="takeTicket('@theme.Id')">Взять талон</button></td>
+            </tr>
+        }
+    </table>
+</div>
+<script>
+    function takeTicket(param) {
+        const params = new URLSearchParams();
+        params.set("themeId", param);
+        const path = "/Terminal/Ticket?" + params.toString();
+        console.log(path);
+        window.location.href = path;
+    }
+</script>

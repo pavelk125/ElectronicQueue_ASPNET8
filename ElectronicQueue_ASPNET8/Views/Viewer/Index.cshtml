@@ -1,0 +1,28 @@
+﻿@using ElectronicQueue.Database.Models
+@model List<QueueItem>
+@{
+    Layout = null;
+}
+<div class="text-center">
+    <table align="center">
+        <tr>
+            <td>Number</td>
+            <td>Окно</td>
+            <td>Status</td>
+        </tr>
+        @foreach(QueueItem qItem in Model)
+        {
+            <tr>
+                <td>@qItem.Number</td>
+                <td>@qItem.QueueNumber</td>
+                <td>@qItem.Status.Name</td>
+            </tr>
+        }
+    </table>
+</div>
+<script>
+    setInterval(reloadPage, 1000);
+    function reloadPage() {
+        location.reload();
+    }
+</script>

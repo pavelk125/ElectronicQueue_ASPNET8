@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34511.84
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElectronicQueue", "ElectronicQueue_ASPNET8\ElectronicQueue.csproj", "{F5F6D263-BD70-412F-817E-1D14018B28DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F5F6D263-BD70-412F-817E-1D14018B28DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5F6D263-BD70-412F-817E-1D14018B28DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5F6D263-BD70-412F-817E-1D14018B28DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5F6D263-BD70-412F-817E-1D14018B28DA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B17E2021-72D6-40F8-A4F0-9A5FD3A61632}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,79 @@
+﻿@using ElectronicQueue.Database.Models
+@using ElectronicQueue.Controllers
+@model List<QueueItem>
+@{
+    Layout = null;
+}
+<div class="text-center">
+    <table align="center">
+        <tr>
+            <td>Номер</td>
+            <td>Тема</td>
+            <td>Статус</td>
+        </tr>
+        @foreach (QueueItem qItem in Model)
+        {
+            <tr>
+                <td>@qItem.Number</td>
+                <td>@qItem.Theme.ThemeName</td>
+                <td>@qItem.Status.Name</td>
+                <td><button type="button" onclick="callTicket('@qItem.Id')">Вызвать</button></td>
+                <td><button type="button" onclick="processTicket('@qItem.Id')">Начать обслуживание</button></td>
+                <td><button type="button" onclick="endTicket('@qItem.Id')">Завершить</button></td>
+            </tr>
+        }
+    </table>
+</div>
+<script>
+
+    setInterval(reloadPage, 1000);
+    function reloadPage() {
+        location.reload();
+    }
+
+    function callTicket2(param) {
+        const params = new URLSearchParams();
+        params.set("qItemId", param);
+        const path = "/Operator/Call?" + params.toString();
+        console.log(path);
+        window.location.href = path;
+    }
+    function callTicket(qItemId) {
+        const formData = new URLSearchParams();
+        formData.append('qItemId', qItemId);
+        formData.append('queueNumber', 0);
+        fetch('/Operator/Call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        })
+        .then(response => {
+            window.location.href = "/Operator";
+        });
+    }
+    function processTicket(qItemId) {
+        const formData = new URLSearchParams();
+        formData.append('qItemId', qItemId);
+        fetch('/Operator/Process', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        })
+        .then(response => {
+            window.location.href = "/Operator";
+        });
+    }
+    function endTicket(qItemId) {
+        const formData = new URLSearchParams();
+        formData.append('qItemId', qItemId);
+        fetch('/Operator/End', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        })
+        .then(response => {
+            window.location.href = "/Operator";
+        });
+    }
+
+</script>
