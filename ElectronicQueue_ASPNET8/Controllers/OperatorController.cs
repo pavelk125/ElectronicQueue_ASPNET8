@@ -20,7 +20,7 @@ namespace ElectronicQueue.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            var filteredList = db.QueueItems.Where(qItem => qItem.Status.Number != (short)QueueElementStatus.Processed);
+            var filteredList = db.QueueItems.Where(qItem => qItem.Status.Number != (short)QueueElementStatus.Processed).ToList();
             //var filteredList = Database.Database.queueItems.Where(qItem => qItem.Status.Number != (short)QueueElementStatus.Processed).ToList();
             return View(filteredList);
         }

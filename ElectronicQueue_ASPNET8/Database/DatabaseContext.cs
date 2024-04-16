@@ -11,7 +11,7 @@ namespace MvcApp.Models
         public DatabaseContext(DbContextOptions<DatabaseContext> options)
             : base(options)
         {
-            Database.EnsureCreated();
         }
+
     }
 }

@@ -14,17 +14,12 @@ namespace ElectronicQueue.Database.Models
             AddTime = DateTime.Now;
         }
 
-        public QueueItem(string number, Theme theme) : this()
+        public QueueItem(string number, Theme theme, int statusId) : this()
         {
             ThemeId = theme.Id;
             Theme = theme;
             Number = number;
-            Status? status = Database.statusList.Find(s => s.Number == (short)QueueElementStatus.None);
-            if(status == null)
-            {
-                throw new Exception();
-            }
-            Status = status;
+            StatusId = statusId;
         }
         public string Id { get; set; }
         public DateTime AddTime { get; set; }
@@ -34,6 +29,7 @@ namespace ElectronicQueue.Database.Models
         public string ThemeId { get; set; }
         public virtual Theme Theme { get; set; }
         public string Number { get; set; }
+        public int StatusId { get; set; }
         public Status? Status { get; set; }
         public int? QueueNumber { get; set; }
     }
