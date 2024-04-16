@@ -29,6 +29,8 @@ namespace ElectronicQueue.Database.Models
         public string ThemeId { get; set; }
         public virtual Theme Theme { get; set; }
         public string Number { get; set; }
+
+        [ForeignKey("Status")]
         public int StatusId { get; set; }
         public Status? Status { get; set; }
         public int? QueueNumber { get; set; }

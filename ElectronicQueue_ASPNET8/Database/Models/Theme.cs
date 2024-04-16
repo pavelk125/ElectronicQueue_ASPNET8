@@ -14,7 +14,7 @@ namespace ElectronicQueue.Database.Models
         public string Id { get; set; }
         public string ThemeName { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
     }
 }
