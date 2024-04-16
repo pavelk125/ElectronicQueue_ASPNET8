@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/ElectronicQueue_ASPNET8/database.db
+/ElectronicQueue_ASPNET8/database.db-shm
+/ElectronicQueue_ASPNET8/database.db-wal
