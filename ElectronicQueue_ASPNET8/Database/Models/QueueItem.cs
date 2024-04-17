@@ -13,19 +13,18 @@ namespace ElectronicQueue.Database.Models
             Id = Guid.NewGuid().ToString("D");
             AddTime = DateTime.Now;
         }
-
-        public QueueItem(string number, Theme theme, int statusId) : this()
+        public QueueItem(string number, string themeId, int statusNumber) : this()
         {
-            ThemeId = theme.Id;
-            Theme = theme;
+            ThemeId = themeId;
             Number = number;
-            StatusId = statusId;
+            StatusId = statusNumber;
         }
         public string Id { get; set; }
         public DateTime AddTime { get; set; }
         public DateTime? CallTime { get; set; }
         public DateTime? StartProcessTime { get; set; }
         public DateTime? EndProcessTime { get; set; }
+        [ForeignKey("Theme")]
         public string ThemeId { get; set; }
         public virtual Theme Theme { get; set; }
         public string Number { get; set; }

@@ -20,20 +20,21 @@ namespace ElectronicQueue.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            var filteredList = db.QueueItems.Where(qItem => qItem.Status.Number != (short)QueueElementStatus.Processed).ToList();
-            //var filteredList = Database.Database.queueItems.Where(qItem => qItem.Status.Number != (short)QueueElementStatus.Processed).ToList();
+            var filteredList = db.QueueItems
+                .Include(q => q.Status)
+                .Include(q => q.Theme)
+                .Where(qItem => qItem.Status.Number != (int)QueueElementStatus.Processed).ToList();
             return View(filteredList);
         }
 
         [HttpGet]
         public IActionResult Call(string qItemId)
         {
-            //QueueItem? qItem = Database.Database.queueItems.Find(qItem => qItem.Id == qItemId);
             var qItem = db.QueueItems.FirstOrDefault(qItem => qItem.Id == qItemId);
             if (qItem != null)
             {
                 qItem.QueueNumber = 0;
-                qItem.Status = Database.Database.statusList.Find(s => s.Number == (short)QueueElementStatus.Called);
+                qItem.Status = db.Statuses.FirstOrDefault(s => s.Number == (int)QueueElementStatus.Called);
                 qItem.CallTime = DateTime.Now;
                 db.SaveChangesAsync();
             }
@@ -46,16 +47,16 @@ namespace ElectronicQueue.Controllers
         [HttpPost]
         public IActionResult Call(string qItemId, int queueNumber)
         {
-            //QueueItem? qItem = Database.Database.queueItems.Find(qItem => qItem.Id == qItemId);
             var qItem = db.QueueItems.FirstOrDefault(qItem => qItem.Id == qItemId);
             if (qItem != null)
             {
-                qItem.QueueNumber = queueNumber;
-                qItem.Status = Database.Database.statusList.Find(s => s.Number == (short)QueueElementStatus.Called);
+                qItem.QueueNumber = 0;
+                qItem.Status = db.Statuses.FirstOrDefault(s => s.Number == (int)QueueElementStatus.Called);
                 qItem.CallTime = DateTime.Now;
                 db.SaveChangesAsync();
             }
-            else { 
+            else
+            {
                 Console.WriteLine("Ошибка. QueueItem с таким ID не найден");
                 return NotFound();
             }
@@ -65,11 +66,10 @@ namespace ElectronicQueue.Controllers
         [HttpPost]
         public IActionResult Process(string qItemId)
         {
-            //QueueItem? qItem = Database.Database.queueItems.Find(qItem => qItem.Id == qItemId);
             var qItem = db.QueueItems.FirstOrDefault(qItem => qItem.Id == qItemId);
             if (qItem != null)
             {
-                qItem.Status = Database.Database.statusList.Find(s => s.Number == (short)QueueElementStatus.Processing);
+                qItem.Status = db.Statuses.FirstOrDefault(s => s.Number == (short)QueueElementStatus.Processing);
                 qItem.StartProcessTime = DateTime.Now;
                 db.SaveChangesAsync();
             }
@@ -84,11 +84,10 @@ namespace ElectronicQueue.Controllers
         [HttpPost]
         public IActionResult End(string qItemId)
         {
-            //QueueItem? qItem = Database.Database.queueItems.Find(qItem => qItem.Id == qItemId);
             var qItem = db.QueueItems.FirstOrDefault(qItem => qItem.Id == qItemId);
             if (qItem != null)
             {
-                qItem.Status = Database.Database.statusList.Find(s => s.Number == (short)QueueElementStatus.Processed);
+                qItem.Status = db.Statuses.FirstOrDefault(s => s.Number == (short)QueueElementStatus.Processed);
                 qItem.EndProcessTime = DateTime.Now;
                 db.SaveChangesAsync();
             }

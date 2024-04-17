@@ -1,4 +1,5 @@
 ﻿using ElectronicQueue.Database.Models;
+using ElectronicQueue.Database.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MvcApp.Models;
@@ -18,12 +19,12 @@ namespace ElectronicQueue.Controllers
         {
             db.Statuses.ToList();
             var theme = db.Themes.FirstOrDefault(t => t.Id!=null);
-            return View(db.Themes.Where(c => true).ToList());
+            return View(db.Themes.ToList());
         }
         [HttpGet]
         public IActionResult Ticket(string themeId)
         {   
-            Theme? theme = db.Themes.FirstOrDefault(x => x.Id == themeId);
+            Theme? theme = db.Themes.FirstOrDefault(theme => theme.Id == themeId);
 
             if (theme != null)
             {
@@ -34,7 +35,8 @@ namespace ElectronicQueue.Controllers
                     t = "0" + number.ToString();
                 }
                 else t = number.ToString();
-                QueueItem queueItem = new QueueItem(t, theme, 0);
+
+                QueueItem queueItem = new QueueItem(t, themeId, (int)QueueElementStatus.None);
                 db.QueueItems.Add(queueItem);
                 db.SaveChangesAsync();
                 return View(queueItem);

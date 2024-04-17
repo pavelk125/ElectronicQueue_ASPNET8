@@ -16,8 +16,9 @@ namespace ElectronicQueue.Controllers
         public IActionResult Index()
         {
             var filteredList = db.QueueItems
-                .Where(qItem => qItem.Status.Number != (short)QueueElementStatus.Processed && qItem.Status.Number != (short)QueueElementStatus.Processing)
-                .Include(t => t.Theme)
+                .Include(q => q.Status)
+                .Include(q => q.Theme)
+                .Where(qItem => qItem.Status.Number != (int)QueueElementStatus.Processed && qItem.Status.Number != (int)QueueElementStatus.Processing)
                 .ToList();
             return View(filteredList);
         }
