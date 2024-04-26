@@ -5,20 +5,25 @@
 }
 <div class="text-center">
     <table align="center">
-        <tr>
-            <td>Тема</td>
-            <td>Описание</td>
-        </tr>
-        @foreach (Theme theme in Model)
-        {
+        <thead>
             <tr>
-                <td>@theme.ThemeName</td>
-                <td>@theme.Description</td>
-                <td><button type="button" onclick="takeTicket('@theme.Id')">Взять талон</button></td>
+                <td>Тема</td>
+                <td>Описание</td>
             </tr>
-        }
+        </thead>
+        <tbody>
+            @foreach (Theme theme in Model)
+            {
+                <tr>
+                    <td>@theme.ThemeName</td>
+                    <td>@theme.Description</td>
+                    <td><button type="button" onclick="takeTicket('@theme.Id')">Взять талон</button></td>
+                </tr>
+            }
+        </tbody>
     </table>
 </div>
+
 <script>
     function takeTicket(param) {
         const params = new URLSearchParams();

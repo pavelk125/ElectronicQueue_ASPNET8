@@ -1,72 +1,46 @@
 ﻿@using ElectronicQueue.Database.Models
 @using ElectronicQueue.Controllers
+@using ElectronicQueue.Database.Models.Enums
 @model List<QueueItem>
 @{
     Layout = null;
 }
 <div class="text-center">
     <table align="center">
+        <thead>
         <tr>
             <td>Номер</td>
             <td>Тема</td>
             <td>Статус</td>
         </tr>
+        </thead>
+        <tbody id="QueueTable">
         @foreach (QueueItem qItem in Model)
         {
-            <tr>
-                <td>@qItem.Number</td>
-                <td>@qItem.Theme.ThemeName</td>
-                <td>@qItem.Status.Name</td>
-                <td><button type="button" onclick="callTicket('@qItem.Id')">Вызвать</button></td>
-                <td><button type="button" onclick="processTicket('@qItem.Id')">Начать обслуживание</button></td>
-                <td><button type="button" onclick="endTicket('@qItem.Id')">Завершить</button></td>
+            <tr id="@qItem.Id">
+                <td name= "number">@qItem.Number</td>
+                <td name = "themename">@qItem.Theme.ThemeName</td>
+                <td name = "status">@qItem.Status.Name</td>
+                <td><button type="button" onclick="ticket('@qItem.Id','Call')">Вызвать</button></td>
+                <td><button type="button" onclick="ticket('@qItem.Id','Process')">Начать обслуживание</button></td>
+                <td><button type="button" onclick="ticket('@qItem.Id','End')">Завершить</button></td>
             </tr>
         }
+        </tbody>
     </table>
 </div>
 <script>
 
-    setInterval(reloadPage, 1000);
-    function reloadPage() {
-        location.reload();
-    }
+    // setInterval(reloadPage, 1000);
+    // function reloadPage() {
+    //     location.reload();
+    // }
 
-    function callTicket2(param) {
-        const params = new URLSearchParams();
-        params.set("qItemId", param);
-        const path = "/Operator/Call?" + params.toString();
-        console.log(path);
-        window.location.href = path;
-    }
-    function callTicket(qItemId) {
+    function ticket(qItemId,type) {
         const formData = new URLSearchParams();
         formData.append('qItemId', qItemId);
         formData.append('queueNumber', 0);
-        fetch('/Operator/Call', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formData.toString()
-        })
-        .then(response => {
-            window.location.href = "/Operator";
-        });
-    }
-    function processTicket(qItemId) {
-        const formData = new URLSearchParams();
-        formData.append('qItemId', qItemId);
-        fetch('/Operator/Process', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formData.toString()
-        })
-        .then(response => {
-            window.location.href = "/Operator";
-        });
-    }
-    function endTicket(qItemId) {
-        const formData = new URLSearchParams();
-        formData.append('qItemId', qItemId);
-        fetch('/Operator/End', {
+        fetch('/Operator/'+type, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: formData.toString()
@@ -76,4 +50,65 @@
         });
     }
 
+</script>
+
+<script src="/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+<script>
+    const hubConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/hub/message")
+        .build();
+
+    hubConnection.on("TicketUpdateHandler", function (queueItem) {
+        console.log(queueItem)
+        let ticket = queueItem;
+        let table = document.getElementById("QueueTable");
+        let row = document.getElementById(queueItem.id);
+
+        if (queueItem.status.number == @((int)QueueElementStatus.Processed)) {
+            if (row != null) row.remove();
+        }
+        else if (row != null) {
+            row.cells[0].textContent = queueItem.number;
+            row.cells[1].textContent = queueItem.theme.themeName;
+            row.cells[2].textContent = queueItem.status.name;
+        }
+        else {
+            var tr = document.createElement("tr");
+            tr.id = queueItem.id;
+
+            var td = document.createElement("td");
+            td.textContent = ticket.number;
+            tr.appendChild(td);
+
+            td = document.createElement("td");
+            td.textContent = ticket.theme.themeName;
+            tr.appendChild(td);
+
+            td = document.createElement("td");
+            td.textContent = ticket.status.statusName
+            tr.appendChild(td);
+
+            td = document.createElement("td");
+            td.innerHTML =
+                `<button type="button" onclick='ticket("${queueItem.id}", "Call")'>Вызвать</button>`
+            tr.appendChild(td);
+
+            td = document.createElement("td");
+            td.innerHTML =
+            `<button type="button" onclick='ticket("${queueItem.id}", "Process")'>Начать обслуживание</button>`
+            tr.appendChild(td);
+
+            td = document.createElement("td");
+            td.innerHTML =
+                `<button type="button" onclick='ticket("${queueItem.id}", "End")'>Завершить</button>`
+            tr.appendChild(td);
+
+            table.appendChild(tr);
+        }
+    });
+
+    hubConnection.start()
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
 </script>

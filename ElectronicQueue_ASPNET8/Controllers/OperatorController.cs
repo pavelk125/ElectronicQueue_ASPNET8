@@ -6,15 +6,20 @@ using ElectronicQueue.Database;
 using ElectronicQueue.Database.Models.Enums;
 using MvcApp.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using ElectronicQueue.Hubs;
 
 namespace ElectronicQueue.Controllers
 {
+    //[Authorize(Roles = "a,b,c")]
     public class OperatorController : Controller
     {
-
-        DatabaseContext db;
-        public OperatorController(DatabaseContext context) {
+        private readonly DatabaseContext db;
+        private readonly IHubContext<QueueHub> hubContext;
+        public OperatorController(DatabaseContext context, IHubContext<QueueHub> hubContext) {
             db = context;
+            this.hubContext = hubContext;
         }
 
         [HttpGet]
@@ -27,25 +32,9 @@ namespace ElectronicQueue.Controllers
             return View(filteredList);
         }
 
-        [HttpGet]
-        public IActionResult Call(string qItemId)
-        {
-            var qItem = db.QueueItems.FirstOrDefault(qItem => qItem.Id == qItemId);
-            if (qItem != null)
-            {
-                qItem.QueueNumber = 0;
-                qItem.Status = db.Statuses.FirstOrDefault(s => s.Number == (int)QueueElementStatus.Called);
-                qItem.CallTime = DateTime.Now;
-                db.SaveChangesAsync();
-            }
-            else { 
-                Console.WriteLine("Ошибка. QueueItem с таким ID не найден"); 
-                return NotFound();
-            }
-            return RedirectToAction("Index", "Operator");
-        }
+
         [HttpPost]
-        public IActionResult Call(string qItemId, int queueNumber)
+        public async Task<IActionResult> Call(string qItemId, int queueNumber)
         {
             var qItem = db.QueueItems.FirstOrDefault(qItem => qItem.Id == qItemId);
             if (qItem != null)
@@ -53,25 +42,41 @@ namespace ElectronicQueue.Controllers
                 qItem.QueueNumber = 0;
                 qItem.Status = db.Statuses.FirstOrDefault(s => s.Number == (int)QueueElementStatus.Called);
                 qItem.CallTime = DateTime.Now;
-                db.SaveChangesAsync();
+                await db.SaveChangesAsync();
+
+                var q = db.QueueItems
+                    .Include(q => q.Status)
+                    .Include(q => q.Theme)
+                    .FirstOrDefault(q => q.Id == qItem.Id);
+
+                await hubContext.Clients.All.SendAsync("TicketUpdateHandler", q);
+                await db.SaveChangesAsync();
             }
             else
             {
                 Console.WriteLine("Ошибка. QueueItem с таким ID не найден");
                 return NotFound();
             }
-            return RedirectToAction("Index", "Operator");
+            return Ok();
         }
 
         [HttpPost]
-        public IActionResult Process(string qItemId)
+        public async Task<IActionResult> Process(string qItemId)
         {
             var qItem = db.QueueItems.FirstOrDefault(qItem => qItem.Id == qItemId);
             if (qItem != null)
             {
                 qItem.Status = db.Statuses.FirstOrDefault(s => s.Number == (short)QueueElementStatus.Processing);
                 qItem.StartProcessTime = DateTime.Now;
-                db.SaveChangesAsync();
+                await db.SaveChangesAsync();
+
+                var q = db.QueueItems
+                    .Include(q => q.Status)
+                    .Include(q => q.Theme)
+                    .FirstOrDefault(q => q.Id == qItem.Id);
+
+                await hubContext.Clients.All.SendAsync("TicketUpdateHandler", q);
+                await db.SaveChangesAsync();
             }
             else
             {
@@ -81,15 +86,24 @@ namespace ElectronicQueue.Controllers
 
             return RedirectToAction("Index");
         }
+
         [HttpPost]
-        public IActionResult End(string qItemId)
+        public async Task<IActionResult> End(string qItemId)
         {
             var qItem = db.QueueItems.FirstOrDefault(qItem => qItem.Id == qItemId);
             if (qItem != null)
             {
                 qItem.Status = db.Statuses.FirstOrDefault(s => s.Number == (short)QueueElementStatus.Processed);
                 qItem.EndProcessTime = DateTime.Now;
-                db.SaveChangesAsync();
+                await db.SaveChangesAsync();
+
+                var q = db.QueueItems
+                    .Include(q => q.Status)
+                    .Include(q => q.Theme)
+                    .FirstOrDefault(q => q.Id == qItem.Id);
+
+                await hubContext.Clients.All.SendAsync("TicketUpdateHandler", q);
+                await db.SaveChangesAsync();
             }
             else
             {

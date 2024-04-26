@@ -1,18 +1,23 @@
 ﻿using ElectronicQueue.Database.Models;
 using ElectronicQueue.Database.Models.Enums;
+using ElectronicQueue.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using MvcApp.Models;
+using Newtonsoft.Json;
 
 namespace ElectronicQueue.Controllers
 {
 
     public class TerminalController : Controller
     {
-        DatabaseContext db;
-        public TerminalController(DatabaseContext context)
+        private readonly DatabaseContext db;
+        private readonly IHubContext<QueueHub> hubContext;
+        public TerminalController(DatabaseContext context, IHubContext<QueueHub> hubContext)
         {
             db = context;
+            this.hubContext = hubContext;
         }
         [HttpGet]
         public IActionResult Index()
@@ -22,7 +27,7 @@ namespace ElectronicQueue.Controllers
             return View(db.Themes.ToList());
         }
         [HttpGet]
-        public IActionResult Ticket(string themeId)
+        public async Task<IActionResult> Ticket(string themeId)
         {   
             Theme? theme = db.Themes.FirstOrDefault(theme => theme.Id == themeId);
 
@@ -37,8 +42,16 @@ namespace ElectronicQueue.Controllers
                 else t = number.ToString();
 
                 QueueItem queueItem = new QueueItem(t, themeId, (int)QueueElementStatus.None);
+
                 db.QueueItems.Add(queueItem);
-                db.SaveChangesAsync();
+                await db.SaveChangesAsync();
+
+                var q = db.QueueItems
+                    .Include(q => q.Status)
+                    .Include(q => q.Theme)
+                    .FirstOrDefault(q => q.Id == queueItem.Id);
+
+                await hubContext.Clients.All.SendAsync("TicketUpdateHandler", q);
                 return View(queueItem);
             }
             else

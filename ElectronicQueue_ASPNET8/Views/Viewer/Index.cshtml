@@ -1,28 +1,80 @@
 ﻿@using ElectronicQueue.Database.Models
+@using ElectronicQueue.Database.Models.Enums
 @model List<QueueItem>
 @{
     Layout = null;
 }
 <div class="text-center">
     <table align="center">
-        <tr>
-            <td>Number</td>
-            <td>Окно</td>
-            <td>Status</td>
-        </tr>
-        @foreach(QueueItem qItem in Model)
-        {
+        <thead>
             <tr>
-                <td>@qItem.Number</td>
-                <td>@qItem.QueueNumber</td>
-                <td>@qItem.Status.Name</td>
+                <td>Number</td>
+                <td>Окно</td>
+                <td>Status</td>
             </tr>
-        }
+        </thead>
+        <tbody id="QueueTable">
+            @foreach(QueueItem qItem in Model)
+            {
+                <tr id="@qItem.Id">
+                    <td>@qItem.Number</td>
+                    <td>@qItem.QueueNumber</td>
+                    <td>@qItem.Status.Name</td>
+                </tr>
+            }
+        </tbody>
     </table>
 </div>
-<script>
+@* <script>
     setInterval(reloadPage, 1000);
     function reloadPage() {
         location.reload();
     }
+</script> *@
+
+<script src="/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+<script>
+    const hubConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/hub/message")
+        .build();
+
+    hubConnection.on("TicketUpdateHandler", function (queueItem) {
+        console.log(queueItem)
+        let ticket = queueItem;
+        let table = document.getElementById("QueueTable");
+        let row = document.getElementById(queueItem.id);
+
+        if (queueItem.status.number == @((int)QueueElementStatus.Processed) ||
+            queueItem.status.number == @((int)QueueElementStatus.Processing)) {
+            if (row != null)row.remove();
+        }
+        else if (row != null) {
+            row.cells[0].textContent = queueItem.number;
+            row.cells[1].textContent = queueItem.queueNumber;
+            row.cells[2].textContent = queueItem.status.name;
+        }
+        else {
+            var tr = document.createElement("tr");
+            tr.id = queueItem.id;
+
+            var td = document.createElement("td");
+            td.textContent = ticket.number;
+            tr.appendChild(td);
+
+            td = document.createElement("td");
+            td.textContent = ticket.queueNumber;
+            tr.appendChild(td);
+
+            td = document.createElement("td");
+            td.textContent = ticket.status.name
+            tr.appendChild(td);
+
+            table.appendChild(tr);
+        }
+    });
+
+    hubConnection.start()
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
 </script>
